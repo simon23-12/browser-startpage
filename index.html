@@ -863,24 +863,17 @@
             }, 200);
         });
 
-        let isButtonAreaActive = false;
-
         greeting.addEventListener('mouseenter', () => {
-            if (isButtonAreaActive) return; // Verhindere mehrfache Aufrufe
-            isButtonAreaActive = true;
+            if (buttonsCreated) return; // Buttons bereits sichtbar, nichts tun
             clearTimeout(hideTimeout);
             greeting.classList.add('blurred');
-            greeting.style.pointerEvents = 'none'; // Maus geht durch den Text
             buttonCircle.classList.add('active');
             createCircularButtons();
         });
 
         greeting.addEventListener('mouseleave', () => {
-            if (!isButtonAreaActive) return;
             hideTimeout = setTimeout(() => {
-                isButtonAreaActive = false;
                 greeting.classList.remove('blurred');
-                greeting.style.pointerEvents = 'auto'; // Text wieder interaktiv
                 removeCircularButtons();
             }, 300);
         });
@@ -890,11 +883,8 @@
         });
 
         buttonCircle.addEventListener('mouseleave', () => {
-            if (!isButtonAreaActive) return;
             hideTimeout = setTimeout(() => {
-                isButtonAreaActive = false;
                 greeting.classList.remove('blurred');
-                greeting.style.pointerEvents = 'auto'; // Text wieder interaktiv
                 removeCircularButtons();
             }, 300);
         });
