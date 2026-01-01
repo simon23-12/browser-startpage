@@ -3,7 +3,8 @@
 A beautiful, minimalist, and fully customizable browser starting page with animated network background and persistent link management.
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
-[![Made with Love](https://img.shields.io/badge/Made%20with-%E2%9D%A4%EF%B8%8F-red.svg)](https://github.com/yourusername/browser-startpage)
+[![Made with Love](https://img.shields.io/badge/Made%20with-%E2%9D%A4%EF%B8%8F-red.svg)](https://github.com/simon23-12/browser-startpage)
+[![GitHub Pages](https://img.shields.io/badge/demo-live-success)](https://simon23-12.github.io/browser-startpage/)
 
 ## Features
 
@@ -17,7 +18,7 @@ A beautiful, minimalist, and fully customizable browser starting page with anima
 
 ## Demo
 
-🚀 **[Live Demo](https://yourusername.github.io/browser-startpage/)**
+🚀 **[Live Demo](https://simon23-12.github.io/browser-startpage/)**
 
 ## Screenshots
 
@@ -45,7 +46,7 @@ A beautiful, minimalist, and fully customizable browser starting page with anima
 
 1. Fork this repository
 2. Go to Settings → Pages
-3. Select `main` branch as source
+3. Select `master` branch as source
 4. Your page will be available at `https://yourusername.github.io/browser-startpage/`
 
 ### Option 3: Use as New Tab Extension
@@ -147,7 +148,7 @@ Contributions are welcome! Please read [CONTRIBUTING.md](CONTRIBUTING.md) for de
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/yourusername/browser-startpage.git
+   git clone https://github.com/simon23-12/browser-startpage.git
    cd browser-startpage
    ```
 
@@ -188,14 +189,14 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 **Simon**
 
-- GitHub: [@yourusername](https://github.com/yourusername)
+- GitHub: [@simon23-12](https://github.com/simon23-12)
 
 ## Support
 
 If you find this project useful, please consider:
 
 - ⭐ Starring the repository
-- 🐛 Reporting bugs via [Issues](https://github.com/yourusername/browser-startpage/issues)
+- 🐛 Reporting bugs via [Issues](https://github.com/simon23-12/browser-startpage/issues)
 - 💡 Suggesting new features
 - 🔀 Contributing code via Pull Requests
 
