@@ -88,6 +88,8 @@
         .greeting.blurred {
             filter: blur(3px);
             opacity: 0.5;
+            z-index: 5;
+            pointer-events: none;
         }
 
         /* Circular Button Container */
@@ -97,6 +99,7 @@
             left: 50%;
             transform: translate(-50%, -50%);
             pointer-events: none;
+            z-index: 20;
         }
 
         .button-circle.active {
@@ -123,6 +126,7 @@
             opacity: 0;
             transform: translate(-50%, -50%) scale(0);
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            z-index: 25;
         }
 
         body.light-mode .circle-button {
