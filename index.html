@@ -863,10 +863,8 @@
             }, 200);
         });
 
-        // Use the content container to handle hover for the entire area
-        const content = document.querySelector('.content');
-
-        content.addEventListener('mouseenter', () => {
+        // Hover on greeting shows buttons, then we track the whole button area
+        greeting.addEventListener('mouseenter', () => {
             if (buttonsCreated) return; // Buttons already visible
             clearTimeout(hideTimeout);
             greeting.classList.add('blurred');
@@ -874,7 +872,30 @@
             createCircularButtons();
         });
 
-        content.addEventListener('mouseleave', () => {
+        // When mouse leaves greeting, start hide timer
+        greeting.addEventListener('mouseleave', (e) => {
+            // Check if mouse is moving to button circle
+            const rect = buttonCircle.getBoundingClientRect();
+            const isMovingToButtons = e.clientX >= rect.left && e.clientX <= rect.right &&
+                                      e.clientY >= rect.top && e.clientY <= rect.bottom;
+
+            if (!isMovingToButtons) {
+                hideTimeout = setTimeout(() => {
+                    if (!buttonCircle.matches(':hover')) {
+                        greeting.classList.remove('blurred');
+                        removeCircularButtons();
+                    }
+                }, 300);
+            }
+        });
+
+        // Keep buttons visible when hovering over the button circle area
+        buttonCircle.addEventListener('mouseenter', () => {
+            clearTimeout(hideTimeout);
+        });
+
+        // Hide when leaving button circle
+        buttonCircle.addEventListener('mouseleave', () => {
             hideTimeout = setTimeout(() => {
                 greeting.classList.remove('blurred');
                 removeCircularButtons();
