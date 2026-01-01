@@ -500,51 +500,39 @@
     
     <div class="content">
         <div class="greeting" id="greeting"></div>
-        <div class="button-circle" id="buttonCircle">
-            <div class="action-button edit-button" id="editButton">✏️</div>
-            <div class="action-button delete-button" id="deleteButton">🗑️</div>
-        </div>
-    </div>
-
-    <!-- Modal for Add/Edit Link -->
-    <div class="modal" id="linkModal">
-        <div class="modal-content">
-            <h2 id="modalTitle">Link hinzufügen</h2>
-            <div class="form-group">
-                <label for="linkLabel">Bezeichnung</label>
-                <input type="text" id="linkLabel" placeholder="z.B. YouTube">
-            </div>
-            <div class="form-group">
-                <label for="linkUrl">URL</label>
-                <input type="text" id="linkUrl" placeholder="https://example.com">
-            </div>
-            <div class="modal-buttons">
-                <button class="modal-btn secondary" onclick="closeModal()">Abbrechen</button>
-                <button class="modal-btn primary" onclick="saveLink()">Speichern</button>
-            </div>
-        </div>
+        <div class="button-circle" id="buttonCircle"></div>
     </div>
 
     <script>
         // Mode Toggle Funktionalität
         const modeToggle = document.getElementById('modeToggle');
         const body = document.body;
-        
-        // Gespeicherten Modus laden oder Light Mode als Standard
-        const savedMode = localStorage.getItem('mode');
-        if (savedMode === 'dark') {
-            // Nur Dark Mode aktivieren wenn explizit gespeichert
-            body.classList.remove('light-mode');
-            modeToggle.checked = false;
-        } else {
-            // Light Mode als Standard (auch beim ersten Besuch)
-            body.classList.add('light-mode');
-            modeToggle.checked = true;
-            if (!savedMode) {
-                localStorage.setItem('mode', 'light');
+
+        // Auto-detect mode based on time of day
+        function setModeBasedOnTime() {
+            const hour = new Date().getHours();
+            const savedMode = localStorage.getItem('mode');
+
+            // After 6pm (18:00), use dark mode automatically
+            if (hour >= 18 || hour < 5) {
+                body.classList.remove('light-mode');
+                modeToggle.checked = false;
+                if (!savedMode || savedMode === 'light') {
+                    localStorage.setItem('mode', 'dark');
+                }
+            } else {
+                // Light Mode during the day (5am - 6pm)
+                body.classList.add('light-mode');
+                modeToggle.checked = true;
+                if (!savedMode || savedMode === 'dark') {
+                    localStorage.setItem('mode', 'light');
+                }
             }
         }
-        
+
+        // Set initial mode based on time
+        setModeBasedOnTime();
+
         modeToggle.addEventListener('change', () => {
             body.classList.toggle('light-mode');
             localStorage.setItem('mode', body.classList.contains('light-mode') ? 'light' : 'dark');
@@ -567,227 +555,47 @@
         // Circular Buttons Setup
         const greeting = document.getElementById('greeting');
         const buttonCircle = document.getElementById('buttonCircle');
-        const editButton = document.getElementById('editButton');
-        const deleteButton = document.getElementById('deleteButton');
         let buttonsCreated = false;
         let hideTimeout;
-        let currentHoveredLink = null;
 
         // Default links (used on first load)
         const defaultLinks = [
             { url: 'https://lmg-dus.webuntis.com/WebUntis/?school=lmg-dus#/basic/login', label: 'Untis' },
             { url: 'https://leibniz-montessori.nrw.schule/public/start', label: 'LMG' },
             { url: 'https://164471.logineonrw-lms.de/login/index.php', label: 'Moodle' },
-            { url: 'https://schuleduesseldorfde-my.sharepoint.com/', label: 'SharePoint' },
-            { url: 'https://www.cornelsen.de/', label: 'Cornelsen' },
+            { url: 'https://schuleduesseldorfde-my.sharepoint.com/', label: 'Cloud' },
+            { url: 'https://www.cornelsen.de/', label: 'Access' },
             { url: 'https://old.reddit.com/', label: 'Reddit' },
-            { url: 'https://de.pokerstrategy.com/forum/', label: 'Poker' },
+            { url: 'https://de.pokerstrategy.com/forum/', label: 'Ps.de' },
             { url: 'https://claude.ai', label: 'Claude' },
-            { url: 'https://lmgvocab.vercel.app', label: 'Vocab' }
+            { url: 'https://www.youtube.com', label: 'YouTube' },
+            { url: 'https://github.com', label: 'GitHub' }
         ];
 
-        // Load links from localStorage or use defaults
-        let links = [];
-        function loadLinks() {
-            const savedLinks = localStorage.getItem('startpage-links');
-            if (savedLinks) {
-                links = JSON.parse(savedLinks);
-            } else {
-                links = [...defaultLinks];
-                saveLinks();
-            }
-        }
-
-        function saveLinks() {
-            // Filter out the plus button before saving
-            const linksToSave = links.filter(link => !link.isPlus);
-            localStorage.setItem('startpage-links', JSON.stringify(linksToSave));
-        }
-
-        loadLinks();
-
-        function positionActionButtons(buttonElement) {
-            if (!buttonElement) return;
-            
-            const buttonRect = buttonElement.getBoundingClientRect();
-            const circleRect = buttonCircle.getBoundingClientRect();
-            
-            // Relativ zum button-circle Container
-            const buttonCenterX = buttonRect.left + buttonRect.width / 2 - circleRect.left;
-            const buttonCenterY = buttonRect.top + buttonRect.height / 2 - circleRect.top;
-            
-            const offset = 45; // Abstand vom Button
-            
-            // Edit Button rechts unten (ca. 5 Uhr Position relativ zum Button)
-            const editAngle = (60 * Math.PI) / 180; // 60 Grad
-            const editX = buttonCenterX + Math.cos(editAngle) * offset;
-            const editY = buttonCenterY + Math.sin(editAngle) * offset;
-            editButton.style.left = `${editX}px`;
-            editButton.style.top = `${editY}px`;
-            
-            // Delete Button links unten (ca. 7 Uhr Position relativ zum Button)
-            const deleteAngle = (120 * Math.PI) / 180; // 120 Grad
-            const deleteX = buttonCenterX + Math.cos(deleteAngle) * offset;
-            const deleteY = buttonCenterY + Math.sin(deleteAngle) * offset;
-            deleteButton.style.left = `${deleteX}px`;
-            deleteButton.style.top = `${deleteY}px`;
-        }
-
-        function showActionButtons(buttonElement) {
-            positionActionButtons(buttonElement);
-            setTimeout(() => {
-                editButton.classList.add('show');
-            }, 50);
-            setTimeout(() => {
-                deleteButton.classList.add('show');
-            }, 100);
-        }
-
-        function hideActionButtons() {
-            editButton.classList.remove('show');
-            deleteButton.classList.remove('show');
-        }
-
-        // Modal management
-        let editingIndex = null;
-        const modal = document.getElementById('linkModal');
-        const modalTitle = document.getElementById('modalTitle');
-        const linkLabelInput = document.getElementById('linkLabel');
-        const linkUrlInput = document.getElementById('linkUrl');
-
-        function openModal(title, label = '', url = '', index = null) {
-            modalTitle.textContent = title;
-            linkLabelInput.value = label;
-            linkUrlInput.value = url;
-            editingIndex = index;
-            modal.classList.add('show');
-            setTimeout(() => linkLabelInput.focus(), 100);
-        }
-
-        function closeModal() {
-            modal.classList.remove('show');
-            linkLabelInput.value = '';
-            linkUrlInput.value = '';
-            editingIndex = null;
-        }
-
-        function saveLink() {
-            const label = linkLabelInput.value.trim();
-            const url = linkUrlInput.value.trim();
-
-            if (!label || !url) {
-                alert('Bitte fülle beide Felder aus!');
-                return;
-            }
-
-            // Basic URL validation
-            if (!url.startsWith('http://') && !url.startsWith('https://')) {
-                alert('Die URL muss mit http:// oder https:// beginnen!');
-                return;
-            }
-
-            if (editingIndex !== null) {
-                // Edit existing link
-                links[editingIndex] = { url, label };
-            } else {
-                // Add new link
-                links.push({ url, label });
-            }
-
-            saveLinks();
-            closeModal();
-
-            // Refresh the button circle
-            removeCircularButtons();
-            setTimeout(() => {
-                createCircularButtons();
-            }, 500);
-        }
-
-        function editLink() {
-            if (!currentHoveredLink) return;
-            const link = currentHoveredLink.link;
-            const index = currentHoveredLink.index;
-            openModal('Link bearbeiten', link.label, link.url, index);
-            hideActionButtons();
-            greeting.classList.remove('blurred');
-            removeCircularButtons();
-        }
-
-        function deleteLink() {
-            if (!currentHoveredLink) return;
-            const link = currentHoveredLink.link;
-            if (confirm(`Möchtest du "${link.label}" wirklich löschen?`)) {
-                links.splice(currentHoveredLink.index, 1);
-                saveLinks();
-                removeCircularButtons();
-                setTimeout(() => {
-                    createCircularButtons();
-                }, 500);
-            }
-        }
-
-        function addNewLink() {
-            openModal('Neuen Link hinzufügen');
-            hideActionButtons();
-            greeting.classList.remove('blurred');
-            removeCircularButtons();
-        }
-
-        // Close modal on Escape key
-        document.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape' && modal.classList.contains('show')) {
-                closeModal();
-            }
-        });
-
-        // Close modal when clicking outside
-        modal.addEventListener('click', (e) => {
-            if (e.target === modal) {
-                closeModal();
-            }
-        });
+        // Use the default links directly
+        const links = defaultLinks;
 
         function createCircularButtons() {
             if (buttonsCreated) return;
 
-            // Add plus button at the end
-            const displayLinks = [...links, { url: '#', label: '+', isPlus: true }];
-
             const radius = 180; // Radius des Kreises
-            const buttonCount = displayLinks.length;
+            const buttonCount = links.length;
             const angleStep = (Math.PI * 2) / buttonCount;
             const startAngle = -Math.PI / 2; // Start oben
 
-            displayLinks.forEach((link, index) => {
+            links.forEach((link, index) => {
                 const angle = startAngle + (angleStep * index);
                 const x = Math.cos(angle) * radius;
                 const y = Math.sin(angle) * radius;
 
                 const button = document.createElement('a');
                 button.href = link.url;
-                button.className = 'circle-button' + (link.isPlus ? ' plus-button' : '');
+                button.className = 'circle-button';
                 button.dataset.index = index;
-                
-                if (link.isPlus) {
-                    button.textContent = '+';
-                    button.addEventListener('click', (e) => {
-                        e.preventDefault();
-                        addNewLink();
-                    });
-                } else {
-                    const span = document.createElement('span');
-                    span.textContent = link.label;
-                    button.appendChild(span);
-                    
-                    // Show edit/delete buttons on hover
-                    button.addEventListener('mouseenter', (e) => {
-                        currentHoveredLink = { element: button, index: index, link: link };
-                        showActionButtons(button);
-                    });
 
-                    // Don't hide on mouseleave - let the buttonCircle handle all hiding logic
-                }
+                const span = document.createElement('span');
+                span.textContent = link.label;
+                button.appendChild(span);
 
                 button.style.left = `calc(50% + ${x}px)`;
                 button.style.top = `calc(50% + ${y}px)`;
@@ -811,22 +619,12 @@
                 }, index * 30);
             });
 
-            hideActionButtons();
-            currentHoveredLink = null;
-
             setTimeout(() => {
                 buttons.forEach(button => button.remove());
                 buttonsCreated = false;
                 buttonCircle.classList.remove('active');
             }, buttons.length * 30 + 300);
         }
-
-        // Event Listeners für Action Buttons
-        editButton.addEventListener('click', editLink);
-        deleteButton.addEventListener('click', deleteLink);
-
-        // Edit/delete buttons don't need hover management
-        // They appear when hovering link buttons and disappear with the circle
 
         // Hover on greeting shows buttons
         greeting.addEventListener('mouseenter', () => {
