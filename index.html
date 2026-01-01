@@ -863,7 +863,7 @@
             }, 200);
         });
 
-        // Hover on greeting shows buttons, then we track the whole button area
+        // Hover on greeting shows buttons
         greeting.addEventListener('mouseenter', () => {
             if (buttonsCreated) return; // Buttons already visible
             clearTimeout(hideTimeout);
@@ -872,21 +872,18 @@
             createCircularButtons();
         });
 
-        // When mouse leaves greeting, start hide timer
+        // Once buttons are created, ONLY the buttonCircle controls hiding
+        // Ignore greeting mouseleave when buttons are visible
         greeting.addEventListener('mouseleave', (e) => {
-            // Check if mouse is moving to button circle
-            const rect = buttonCircle.getBoundingClientRect();
-            const isMovingToButtons = e.clientX >= rect.left && e.clientX <= rect.right &&
-                                      e.clientY >= rect.top && e.clientY <= rect.bottom;
+            if (buttonsCreated) return; // Ignore if buttons are showing
 
-            if (!isMovingToButtons) {
-                hideTimeout = setTimeout(() => {
-                    if (!buttonCircle.matches(':hover')) {
-                        greeting.classList.remove('blurred');
-                        removeCircularButtons();
-                    }
-                }, 300);
-            }
+            // Only relevant if buttons haven't appeared yet (edge case)
+            hideTimeout = setTimeout(() => {
+                if (!buttonsCreated) {
+                    greeting.classList.remove('blurred');
+                    buttonCircle.classList.remove('active');
+                }
+            }, 300);
         });
 
         // Keep buttons visible when hovering over the button circle area
@@ -894,7 +891,7 @@
             clearTimeout(hideTimeout);
         });
 
-        // Hide when leaving button circle
+        // Hide ONLY when leaving the button circle area
         buttonCircle.addEventListener('mouseleave', () => {
             hideTimeout = setTimeout(() => {
                 greeting.classList.remove('blurred');
