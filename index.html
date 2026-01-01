@@ -1,0 +1,1132 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Startseite - Simon</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            overflow: hidden;
+            background: #0a0a0a;
+            transition: background 0.5s ease;
+        }
+
+        body.light-mode {
+            background: #f5f5f5;
+        }
+
+        #background {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+
+        #background img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            opacity: 0.15;
+            transition: opacity 0.5s ease;
+        }
+
+        body.light-mode #background img {
+            opacity: 0.08;
+        }
+
+        canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 2;
+        }
+
+        .content {
+            position: relative;
+            z-index: 3;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            color: white;
+            transition: color 0.5s ease;
+        }
+
+        body.light-mode .content {
+            color: #1a1a1a;
+        }
+
+        .greeting {
+            font-size: 4rem;
+            font-weight: 300;
+            text-align: center;
+            text-shadow: 0 4px 30px rgba(0, 0, 0, 0.8);
+            animation: fadeIn 2s ease-in-out;
+            letter-spacing: 2px;
+            transition: all 0.3s ease;
+            cursor: default;
+            position: relative;
+            z-index: 10;
+        }
+
+        body.light-mode .greeting {
+            text-shadow: 0 4px 30px rgba(255, 255, 255, 0.8);
+        }
+
+        .greeting.blurred {
+            filter: blur(3px);
+            opacity: 0.5;
+        }
+
+        /* Circular Button Container */
+        .button-circle {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            pointer-events: none;
+        }
+
+        .button-circle.active {
+            pointer-events: auto;
+        }
+
+        .circle-button {
+            position: absolute;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            text-decoration: none;
+            color: white;
+            font-size: 0.85rem;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            opacity: 0;
+            transform: translate(-50%, -50%) scale(0);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        body.light-mode .circle-button {
+            background: rgba(255, 255, 255, 0.8);
+            border: 2px solid rgba(0, 0, 0, 0.2);
+            color: #1a1a1a;
+        }
+
+        .circle-button.show {
+            opacity: 1;
+            transform: translate(-50%, -50%) scale(1);
+        }
+
+        .circle-button:hover {
+            background: rgba(255, 255, 255, 0.3);
+            border-color: rgba(255, 255, 255, 0.6);
+            transform: translate(-50%, -50%) scale(1.1);
+        }
+
+        body.light-mode .circle-button:hover {
+            background: rgba(255, 255, 255, 1);
+            border-color: rgba(0, 0, 0, 0.4);
+        }
+
+        .circle-button.plus-button {
+            font-size: 2rem;
+            font-weight: 300;
+        }
+
+        .circle-button span {
+            max-width: 50px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            font-size: 0.75rem;
+        }
+
+        /* Edit and Delete Buttons */
+        .action-button {
+            position: absolute;
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.25);
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(255, 255, 255, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+            opacity: 0;
+            transform: scale(0);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+            pointer-events: none;
+            z-index: 100;
+        }
+
+        body.light-mode .action-button {
+            background: rgba(255, 255, 255, 0.95);
+            border: 2px solid rgba(0, 0, 0, 0.3);
+        }
+
+        .action-button.show {
+            opacity: 1;
+            transform: scale(1);
+            pointer-events: auto;
+        }
+
+        .action-button.edit-button {
+            color: #4A90E2;
+        }
+
+        .action-button.delete-button {
+            color: #E74C3C;
+        }
+
+        body.light-mode .action-button.edit-button {
+            color: #2E5C8A;
+        }
+
+        body.light-mode .action-button.delete-button {
+            color: #C0392B;
+        }
+
+        .action-button:hover {
+            transform: scale(1.15);
+        }
+
+        .action-button.edit-button:hover {
+            background: rgba(74, 144, 226, 0.3);
+            border-color: #4A90E2;
+        }
+
+        .action-button.delete-button:hover {
+            background: rgba(231, 76, 60, 0.3);
+            border-color: #E74C3C;
+        }
+
+        body.light-mode .action-button.edit-button:hover {
+            background: rgba(74, 144, 226, 0.2);
+            border-color: #2E5C8A;
+        }
+
+        body.light-mode .action-button.delete-button:hover {
+            background: rgba(231, 76, 60, 0.2);
+            border-color: #C0392B;
+        }
+
+        /* Toggle Switch */
+        .mode-toggle {
+            position: fixed;
+            top: 30px;
+            right: 30px;
+            z-index: 4;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .mode-label {
+            font-size: 0.9rem;
+            font-weight: 400;
+            opacity: 0.8;
+            transition: opacity 0.3s ease;
+        }
+
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 60px;
+            height: 30px;
+        }
+
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(255, 255, 255, 0.2);
+            transition: 0.4s;
+            border-radius: 30px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        body.light-mode .slider {
+            background-color: rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(0, 0, 0, 0.2);
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 22px;
+            width: 22px;
+            left: 4px;
+            bottom: 3px;
+            background-color: white;
+            transition: 0.4s;
+            border-radius: 50%;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+        }
+
+        body.light-mode .slider:before {
+            background-color: #1a1a1a;
+        }
+
+        input:checked + .slider:before {
+            transform: translateX(30px);
+        }
+
+        .slider:hover {
+            background-color: rgba(255, 255, 255, 0.3);
+        }
+
+        body.light-mode .slider:hover {
+            background-color: rgba(0, 0, 0, 0.15);
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(5px);
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.show {
+            display: flex;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .modal-content {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(20px);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            padding: 40px;
+            border-radius: 20px;
+            max-width: 500px;
+            width: 90%;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+            animation: slideInUp 0.3s ease;
+        }
+
+        body.light-mode .modal-content {
+            background: rgba(255, 255, 255, 0.95);
+            border: 2px solid rgba(0, 0, 0, 0.2);
+        }
+
+        @keyframes slideInUp {
+            from {
+                transform: translateY(50px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .modal h2 {
+            margin-bottom: 25px;
+            font-size: 1.8rem;
+            font-weight: 400;
+            color: white;
+            text-align: center;
+        }
+
+        body.light-mode .modal h2 {
+            color: #1a1a1a;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+        body.light-mode .form-group label {
+            color: #333;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 10px;
+            font-size: 1rem;
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            transition: all 0.3s ease;
+        }
+
+        body.light-mode .form-group input {
+            background: rgba(255, 255, 255, 0.9);
+            border: 2px solid rgba(0, 0, 0, 0.2);
+            color: #1a1a1a;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: rgba(255, 255, 255, 0.6);
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        body.light-mode .form-group input:focus {
+            border-color: rgba(0, 0, 0, 0.4);
+            background: white;
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 15px;
+            margin-top: 30px;
+        }
+
+        .modal-btn {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .modal-btn.primary {
+            background: rgba(255, 255, 255, 0.3);
+            color: white;
+            border: 2px solid rgba(255, 255, 255, 0.5);
+        }
+
+        .modal-btn.primary:hover {
+            background: rgba(255, 255, 255, 0.4);
+            transform: translateY(-2px);
+        }
+
+        body.light-mode .modal-btn.primary {
+            background: #1a1a1a;
+            color: white;
+            border: 2px solid #1a1a1a;
+        }
+
+        body.light-mode .modal-btn.primary:hover {
+            background: #333;
+        }
+
+        .modal-btn.secondary {
+            background: transparent;
+            color: rgba(255, 255, 255, 0.8);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .modal-btn.secondary:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: rgba(255, 255, 255, 0.5);
+        }
+
+        body.light-mode .modal-btn.secondary {
+            color: #666;
+            border: 2px solid #ccc;
+        }
+
+        body.light-mode .modal-btn.secondary:hover {
+            background: rgba(0, 0, 0, 0.05);
+            border-color: #999;
+        }
+
+        @media (max-width: 768px) {
+            .greeting {
+                font-size: 2.5rem;
+            }
+            .time {
+                font-size: 3.5rem;
+            }
+            .date {
+                font-size: 1.2rem;
+            }
+            .modal-content {
+                padding: 30px 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="background">
+        <img src="/mnt/user-data/uploads/1767276616165_image.png" alt="Network Background">
+    </div>
+    
+    <canvas id="networkCanvas"></canvas>
+    
+    <div class="mode-toggle">
+        <span class="mode-label">Light Mode</span>
+        <label class="switch">
+            <input type="checkbox" id="modeToggle">
+            <span class="slider"></span>
+        </label>
+    </div>
+    
+    <div class="content">
+        <div class="greeting" id="greeting"></div>
+        <div class="button-circle" id="buttonCircle">
+            <div class="action-button edit-button" id="editButton">✏️</div>
+            <div class="action-button delete-button" id="deleteButton">🗑️</div>
+        </div>
+    </div>
+
+    <!-- Modal for Add/Edit Link -->
+    <div class="modal" id="linkModal">
+        <div class="modal-content">
+            <h2 id="modalTitle">Link hinzufügen</h2>
+            <div class="form-group">
+                <label for="linkLabel">Bezeichnung</label>
+                <input type="text" id="linkLabel" placeholder="z.B. YouTube">
+            </div>
+            <div class="form-group">
+                <label for="linkUrl">URL</label>
+                <input type="text" id="linkUrl" placeholder="https://example.com">
+            </div>
+            <div class="modal-buttons">
+                <button class="modal-btn secondary" onclick="closeModal()">Abbrechen</button>
+                <button class="modal-btn primary" onclick="saveLink()">Speichern</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Mode Toggle Funktionalität
+        const modeToggle = document.getElementById('modeToggle');
+        const body = document.body;
+        
+        // Gespeicherten Modus laden
+        const savedMode = localStorage.getItem('mode');
+        if (savedMode === 'light') {
+            body.classList.add('light-mode');
+            modeToggle.checked = true;
+        }
+        
+        modeToggle.addEventListener('change', () => {
+            body.classList.toggle('light-mode');
+            localStorage.setItem('mode', body.classList.contains('light-mode') ? 'light' : 'dark');
+        });
+
+        // Begrüßung basierend auf Tageszeit
+        function updateGreeting() {
+            const hour = new Date().getHours();
+            const greetingEl = document.getElementById('greeting');
+            
+            if (hour >= 5 && hour < 12) {
+                greetingEl.textContent = 'Guten Morgen, Simon';
+            } else if (hour >= 12 && hour < 18) {
+                greetingEl.textContent = 'Guten Tag, Simon';
+            } else {
+                greetingEl.textContent = 'Guten Abend, Simon';
+            }
+        }
+
+        // Circular Buttons Setup
+        const greeting = document.getElementById('greeting');
+        const buttonCircle = document.getElementById('buttonCircle');
+        const editButton = document.getElementById('editButton');
+        const deleteButton = document.getElementById('deleteButton');
+        let buttonsCreated = false;
+        let hideTimeout;
+        let currentHoveredLink = null;
+
+        // Default links (used on first load)
+        const defaultLinks = [
+            { url: 'https://lmg-dus.webuntis.com/WebUntis/?school=lmg-dus#/basic/login', label: 'Untis' },
+            { url: 'https://leibniz-montessori.nrw.schule/public/start', label: 'LMG' },
+            { url: 'https://164471.logineonrw-lms.de/login/index.php', label: 'Moodle' },
+            { url: 'https://schuleduesseldorfde-my.sharepoint.com/', label: 'SharePoint' },
+            { url: 'https://www.cornelsen.de/', label: 'Cornelsen' },
+            { url: 'https://old.reddit.com/', label: 'Reddit' },
+            { url: 'https://de.pokerstrategy.com/forum/', label: 'Poker' },
+            { url: 'https://claude.ai', label: 'Claude' },
+            { url: 'https://lmgvocab.vercel.app', label: 'Vocab' }
+        ];
+
+        // Load links from localStorage or use defaults
+        let links = [];
+        function loadLinks() {
+            const savedLinks = localStorage.getItem('startpage-links');
+            if (savedLinks) {
+                links = JSON.parse(savedLinks);
+            } else {
+                links = [...defaultLinks];
+                saveLinks();
+            }
+        }
+
+        function saveLinks() {
+            // Filter out the plus button before saving
+            const linksToSave = links.filter(link => !link.isPlus);
+            localStorage.setItem('startpage-links', JSON.stringify(linksToSave));
+        }
+
+        loadLinks();
+
+        function positionActionButtons(buttonElement) {
+            if (!buttonElement) return;
+            
+            const buttonRect = buttonElement.getBoundingClientRect();
+            const circleRect = buttonCircle.getBoundingClientRect();
+            
+            // Relativ zum button-circle Container
+            const buttonCenterX = buttonRect.left + buttonRect.width / 2 - circleRect.left;
+            const buttonCenterY = buttonRect.top + buttonRect.height / 2 - circleRect.top;
+            
+            const offset = 45; // Abstand vom Button
+            
+            // Edit Button rechts unten (ca. 5 Uhr Position relativ zum Button)
+            const editAngle = (60 * Math.PI) / 180; // 60 Grad
+            const editX = buttonCenterX + Math.cos(editAngle) * offset;
+            const editY = buttonCenterY + Math.sin(editAngle) * offset;
+            editButton.style.left = `${editX}px`;
+            editButton.style.top = `${editY}px`;
+            
+            // Delete Button links unten (ca. 7 Uhr Position relativ zum Button)
+            const deleteAngle = (120 * Math.PI) / 180; // 120 Grad
+            const deleteX = buttonCenterX + Math.cos(deleteAngle) * offset;
+            const deleteY = buttonCenterY + Math.sin(deleteAngle) * offset;
+            deleteButton.style.left = `${deleteX}px`;
+            deleteButton.style.top = `${deleteY}px`;
+        }
+
+        function showActionButtons(buttonElement) {
+            positionActionButtons(buttonElement);
+            setTimeout(() => {
+                editButton.classList.add('show');
+            }, 50);
+            setTimeout(() => {
+                deleteButton.classList.add('show');
+            }, 100);
+        }
+
+        function hideActionButtons() {
+            editButton.classList.remove('show');
+            deleteButton.classList.remove('show');
+        }
+
+        // Modal management
+        let editingIndex = null;
+        const modal = document.getElementById('linkModal');
+        const modalTitle = document.getElementById('modalTitle');
+        const linkLabelInput = document.getElementById('linkLabel');
+        const linkUrlInput = document.getElementById('linkUrl');
+
+        function openModal(title, label = '', url = '', index = null) {
+            modalTitle.textContent = title;
+            linkLabelInput.value = label;
+            linkUrlInput.value = url;
+            editingIndex = index;
+            modal.classList.add('show');
+            setTimeout(() => linkLabelInput.focus(), 100);
+        }
+
+        function closeModal() {
+            modal.classList.remove('show');
+            linkLabelInput.value = '';
+            linkUrlInput.value = '';
+            editingIndex = null;
+        }
+
+        function saveLink() {
+            const label = linkLabelInput.value.trim();
+            const url = linkUrlInput.value.trim();
+
+            if (!label || !url) {
+                alert('Bitte fülle beide Felder aus!');
+                return;
+            }
+
+            // Basic URL validation
+            if (!url.startsWith('http://') && !url.startsWith('https://')) {
+                alert('Die URL muss mit http:// oder https:// beginnen!');
+                return;
+            }
+
+            if (editingIndex !== null) {
+                // Edit existing link
+                links[editingIndex] = { url, label };
+            } else {
+                // Add new link
+                links.push({ url, label });
+            }
+
+            saveLinks();
+            closeModal();
+
+            // Refresh the button circle
+            removeCircularButtons();
+            setTimeout(() => {
+                createCircularButtons();
+            }, 500);
+        }
+
+        function editLink() {
+            if (!currentHoveredLink) return;
+            const link = currentHoveredLink.link;
+            const index = currentHoveredLink.index;
+            openModal('Link bearbeiten', link.label, link.url, index);
+            hideActionButtons();
+            greeting.classList.remove('blurred');
+            removeCircularButtons();
+        }
+
+        function deleteLink() {
+            if (!currentHoveredLink) return;
+            const link = currentHoveredLink.link;
+            if (confirm(`Möchtest du "${link.label}" wirklich löschen?`)) {
+                links.splice(currentHoveredLink.index, 1);
+                saveLinks();
+                removeCircularButtons();
+                setTimeout(() => {
+                    createCircularButtons();
+                }, 500);
+            }
+        }
+
+        function addNewLink() {
+            openModal('Neuen Link hinzufügen');
+            hideActionButtons();
+            greeting.classList.remove('blurred');
+            removeCircularButtons();
+        }
+
+        // Close modal on Escape key
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && modal.classList.contains('show')) {
+                closeModal();
+            }
+        });
+
+        // Close modal when clicking outside
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                closeModal();
+            }
+        });
+
+        function createCircularButtons() {
+            if (buttonsCreated) return;
+
+            // Add plus button at the end
+            const displayLinks = [...links, { url: '#', label: '+', isPlus: true }];
+
+            const radius = 180; // Radius des Kreises
+            const buttonCount = displayLinks.length;
+            const angleStep = (Math.PI * 2) / buttonCount;
+            const startAngle = -Math.PI / 2; // Start oben
+
+            displayLinks.forEach((link, index) => {
+                const angle = startAngle + (angleStep * index);
+                const x = Math.cos(angle) * radius;
+                const y = Math.sin(angle) * radius;
+
+                const button = document.createElement('a');
+                button.href = link.url;
+                button.className = 'circle-button' + (link.isPlus ? ' plus-button' : '');
+                button.dataset.index = index;
+                
+                if (link.isPlus) {
+                    button.textContent = '+';
+                    button.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        addNewLink();
+                    });
+                } else {
+                    const span = document.createElement('span');
+                    span.textContent = link.label;
+                    button.appendChild(span);
+                    
+                    // Hover Events für Edit/Delete Buttons
+                    button.addEventListener('mouseenter', (e) => {
+                        currentHoveredLink = { element: button, index: index, link: link };
+                        showActionButtons(button);
+                    });
+
+                    button.addEventListener('mouseleave', (e) => {
+                        // Nur verstecken wenn Maus nicht zu Edit/Delete Buttons geht
+                        setTimeout(() => {
+                            if (!editButton.matches(':hover') && !deleteButton.matches(':hover')) {
+                                currentHoveredLink = null;
+                                hideActionButtons();
+                            }
+                        }, 50);
+                    });
+                }
+
+                button.style.left = `calc(50% + ${x}px)`;
+                button.style.top = `calc(50% + ${y}px)`;
+
+                buttonCircle.appendChild(button);
+
+                // Staggered animation im Uhrzeigersinn
+                setTimeout(() => {
+                    button.classList.add('show');
+                }, index * 50); // 50ms Verzögerung zwischen jedem Button
+            });
+
+            buttonsCreated = true;
+        }
+
+        function removeCircularButtons() {
+            const buttons = buttonCircle.querySelectorAll('.circle-button');
+            buttons.forEach((button, index) => {
+                setTimeout(() => {
+                    button.classList.remove('show');
+                }, index * 30);
+            });
+
+            hideActionButtons();
+            currentHoveredLink = null;
+
+            setTimeout(() => {
+                buttons.forEach(button => button.remove());
+                buttonsCreated = false;
+                buttonCircle.classList.remove('active');
+            }, buttons.length * 30 + 300);
+        }
+
+        // Event Listeners für Action Buttons
+        editButton.addEventListener('click', editLink);
+        deleteButton.addEventListener('click', deleteLink);
+
+        editButton.addEventListener('mouseleave', () => {
+            setTimeout(() => {
+                if (currentHoveredLink && !currentHoveredLink.element.matches(':hover') && !deleteButton.matches(':hover')) {
+                    hideActionButtons();
+                    currentHoveredLink = null;
+                }
+            }, 50);
+        });
+
+        deleteButton.addEventListener('mouseleave', () => {
+            setTimeout(() => {
+                if (currentHoveredLink && !currentHoveredLink.element.matches(':hover') && !editButton.matches(':hover')) {
+                    hideActionButtons();
+                    currentHoveredLink = null;
+                }
+            }, 50);
+        });
+
+        greeting.addEventListener('mouseenter', () => {
+            clearTimeout(hideTimeout);
+            greeting.classList.add('blurred');
+            buttonCircle.classList.add('active');
+            createCircularButtons();
+        });
+
+        greeting.addEventListener('mouseleave', () => {
+            hideTimeout = setTimeout(() => {
+                greeting.classList.remove('blurred');
+                removeCircularButtons();
+            }, 300);
+        });
+
+        buttonCircle.addEventListener('mouseenter', () => {
+            clearTimeout(hideTimeout);
+        });
+
+        buttonCircle.addEventListener('mouseleave', () => {
+            hideTimeout = setTimeout(() => {
+                greeting.classList.remove('blurred');
+                removeCircularButtons();
+            }, 300);
+        });
+
+        // Canvas Animation
+        const canvas = document.getElementById('networkCanvas');
+        const ctx = canvas.getContext('2d');
+        
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+
+        window.addEventListener('resize', () => {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        });
+
+        class Node {
+            constructor() {
+                this.reset();
+                this.y = Math.random() * canvas.height;
+                this.opacity = Math.random();
+                this.glowIntensity = 0;
+                this.connections = [];
+            }
+
+            reset() {
+                this.x = Math.random() * canvas.width;
+                this.y = Math.random() * canvas.height;
+                this.vx = (Math.random() - 0.5) * 0.4;
+                this.vy = (Math.random() - 0.5) * 0.4;
+                this.radius = Math.random() * 2.5 + 1.5;
+                this.opacity = 0;
+                this.fadeIn = true;
+                this.fadeInDuration = Math.random() * 100 + 50;
+                this.fadeOutDuration = Math.random() * 100 + 50;
+                this.visibleDuration = Math.random() * 600 + 900;
+                this.delayBeforeAppear = Math.random() * 600;
+                this.age = -this.delayBeforeAppear;
+                this.maxOpacity = Math.random() * 0.5 + 0.4;
+                this.glowIntensity = 0;
+                this.connections = [];
+            }
+
+            update() {
+                this.age++;
+                
+                if (this.age < 0) {
+                    return;
+                }
+                
+                if (this.fadeIn && this.age < this.fadeInDuration) {
+                    this.opacity = (this.age / this.fadeInDuration) * this.maxOpacity;
+                } else if (this.fadeIn && this.age >= this.fadeInDuration) {
+                    this.fadeIn = false;
+                    this.opacity = this.maxOpacity;
+                }
+                
+                if (!this.fadeIn && this.age < this.fadeInDuration + this.visibleDuration) {
+                    this.opacity = this.maxOpacity;
+                }
+                
+                if (this.age >= this.fadeInDuration + this.visibleDuration) {
+                    const fadeOutProgress = (this.age - this.fadeInDuration - this.visibleDuration) / this.fadeOutDuration;
+                    this.opacity = this.maxOpacity * (1 - fadeOutProgress);
+                }
+
+                this.x += this.vx;
+                this.y += this.vy;
+
+                if (this.x < -10) this.x = canvas.width + 10;
+                if (this.x > canvas.width + 10) this.x = -10;
+                if (this.y < -10) this.y = canvas.height + 10;
+                if (this.y > canvas.height + 10) this.y = -10;
+                
+                if (this.opacity <= 0 && this.age > this.fadeInDuration + this.visibleDuration) {
+                    this.reset();
+                }
+
+                // Glow-Effekt abklingen lassen
+                if (this.glowIntensity > 0) {
+                    this.glowIntensity -= 0.05;
+                }
+            }
+
+            triggerGlow() {
+                this.glowIntensity = 1;
+            }
+
+            draw() {
+                const isLightMode = body.classList.contains('light-mode');
+                const nodeColor = isLightMode ? '50, 50, 50' : '200, 200, 200';
+                
+                // Äußerer Glow bei neuen Verbindungen
+                if (this.glowIntensity > 0) {
+                    const glowRadius = this.radius + (10 * this.glowIntensity);
+                    const gradient = ctx.createRadialGradient(this.x, this.y, this.radius, this.x, this.y, glowRadius);
+                    gradient.addColorStop(0, `rgba(${nodeColor}, ${this.opacity})`);
+                    gradient.addColorStop(0.5, `rgba(${nodeColor}, ${this.opacity * this.glowIntensity * 0.5})`);
+                    gradient.addColorStop(1, `rgba(${nodeColor}, 0)`);
+                    
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y, glowRadius, 0, Math.PI * 2);
+                    ctx.fillStyle = gradient;
+                    ctx.fill();
+                }
+                
+                // Node selbst
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                ctx.fillStyle = `rgba(${nodeColor}, ${this.opacity})`;
+                ctx.fill();
+                
+                // Heller Kern wenn Glow aktiv
+                if (this.glowIntensity > 0.3) {
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y, this.radius * 0.6, 0, Math.PI * 2);
+                    ctx.fillStyle = `rgba(${isLightMode ? '100, 100, 100' : '255, 255, 255'}, ${this.glowIntensity * 0.8})`;
+                    ctx.fill();
+                }
+            }
+        }
+
+        // Nodes erstellen - mehr Nodes für intensivere Animation
+        const nodes = [];
+        const nodeCount = 150;
+        let dynamicConnections = [];
+        let frameCount = 0;
+        
+        for (let i = 0; i < nodeCount; i++) {
+            nodes.push(new Node());
+        }
+
+        // Dynamische Verbindungen erstellen - reduziert für weniger Flackern
+        function updateDynamicConnections() {
+            // Alle 90 Frames (ca. 1.5 Sekunden) neue zufällige Verbindungen erstellen
+            if (frameCount % 90 === 0) {
+                // Manchmal neue Verbindung hinzufügen
+                if (Math.random() < 0.2 && dynamicConnections.length < 8) {
+                    const node1 = nodes[Math.floor(Math.random() * nodes.length)];
+                    const node2 = nodes[Math.floor(Math.random() * nodes.length)];
+                    
+                    if (node1 !== node2 && node1.opacity > 0.2 && node2.opacity > 0.2) {
+                        const dx = node1.x - node2.x;
+                        const dy = node1.y - node2.y;
+                        const distance = Math.sqrt(dx * dx + dy * dy);
+                        
+                        if (distance < 350 && distance > 80) {
+                            dynamicConnections.push({
+                                node1: node1,
+                                node2: node2,
+                                opacity: 0,
+                                maxOpacity: Math.random() * 0.35 + 0.15,
+                                age: 0,
+                                lifetime: Math.random() * 240 + 180 // 3-7 Sekunden
+                            });
+                            node1.triggerGlow();
+                            node2.triggerGlow();
+                        }
+                    }
+                }
+                
+                // Alte Verbindungen entfernen
+                dynamicConnections = dynamicConnections.filter(conn => conn.age < conn.lifetime);
+            }
+            
+            // Verbindungen altern lassen
+            dynamicConnections.forEach(conn => {
+                conn.age++;
+                // Längeres Fade-in und Fade-out
+                if (conn.age < 40) {
+                    conn.opacity = (conn.age / 40) * conn.maxOpacity;
+                } else if (conn.age > conn.lifetime - 40) {
+                    conn.opacity = conn.maxOpacity * ((conn.lifetime - conn.age) / 40);
+                } else {
+                    conn.opacity = conn.maxOpacity;
+                }
+            });
+        }
+
+        // Verbindungen zeichnen
+        function drawConnections() {
+            const maxDistance = 150;
+            const isLightMode = body.classList.contains('light-mode');
+            const lineColor = isLightMode ? '50, 50, 50' : '200, 200, 200';
+            
+            // Normale proximity-basierte Verbindungen
+            for (let i = 0; i < nodes.length; i++) {
+                for (let j = i + 1; j < nodes.length; j++) {
+                    const dx = nodes[i].x - nodes[j].x;
+                    const dy = nodes[i].y - nodes[j].y;
+                    const distance = Math.sqrt(dx * dx + dy * dy);
+
+                    if (distance < maxDistance) {
+                        const opacity = (1 - distance / maxDistance) * 0.25 * Math.min(nodes[i].opacity, nodes[j].opacity);
+                        ctx.beginPath();
+                        ctx.moveTo(nodes[i].x, nodes[i].y);
+                        ctx.lineTo(nodes[j].x, nodes[j].y);
+                        ctx.strokeStyle = `rgba(${lineColor}, ${opacity})`;
+                        ctx.lineWidth = 0.5;
+                        ctx.stroke();
+                    }
+                }
+            }
+            
+            // Dynamische Verbindungen zeichnen (etwas heller und dicker)
+            dynamicConnections.forEach(conn => {
+                if (conn.node1.opacity > 0 && conn.node2.opacity > 0) {
+                    ctx.beginPath();
+                    ctx.moveTo(conn.node1.x, conn.node1.y);
+                    ctx.lineTo(conn.node2.x, conn.node2.y);
+                    ctx.strokeStyle = `rgba(${lineColor}, ${conn.opacity})`;
+                    ctx.lineWidth = 1.2;
+                    ctx.stroke();
+                    
+                    // Subtiler Glow um die Linie
+                    ctx.strokeStyle = `rgba(${lineColor}, ${conn.opacity * 0.2})`;
+                    ctx.lineWidth = 2.5;
+                    ctx.stroke();
+                }
+            });
+        }
+
+        // Animation Loop
+        function animate() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            frameCount++;
+            updateDynamicConnections();
+            
+            drawConnections();
+            
+            nodes.forEach(node => {
+                node.update();
+                node.draw();
+            });
+
+            requestAnimationFrame(animate);
+        }
+
+        // Initialisierung
+        updateGreeting();
+        animate();
+
+        // Begrüßung alle 60 Sekunden aktualisieren
+        setInterval(updateGreeting, 60000);
+    </script>
+</body>
+</html>
