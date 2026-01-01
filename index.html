@@ -803,7 +803,7 @@
                                 currentHoveredLink = null;
                                 hideActionButtons();
                             }
-                        }, 50);
+                        }, 200);
                     });
                 }
 
@@ -843,13 +843,29 @@
         editButton.addEventListener('click', editLink);
         deleteButton.addEventListener('click', deleteLink);
 
+        editButton.addEventListener('mouseenter', () => {
+            // Keep buttons visible when hovering over them
+            if (currentHoveredLink) {
+                editButton.classList.add('show');
+                deleteButton.classList.add('show');
+            }
+        });
+
+        deleteButton.addEventListener('mouseenter', () => {
+            // Keep buttons visible when hovering over them
+            if (currentHoveredLink) {
+                editButton.classList.add('show');
+                deleteButton.classList.add('show');
+            }
+        });
+
         editButton.addEventListener('mouseleave', () => {
             setTimeout(() => {
                 if (currentHoveredLink && !currentHoveredLink.element.matches(':hover') && !deleteButton.matches(':hover')) {
                     hideActionButtons();
                     currentHoveredLink = null;
                 }
-            }, 50);
+            }, 200);
         });
 
         deleteButton.addEventListener('mouseleave', () => {
@@ -858,7 +874,7 @@
                     hideActionButtons();
                     currentHoveredLink = null;
                 }
-            }, 50);
+            }, 200);
         });
 
         greeting.addEventListener('mouseenter', () => {
