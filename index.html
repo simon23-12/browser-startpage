@@ -863,26 +863,18 @@
             }, 200);
         });
 
-        greeting.addEventListener('mouseenter', () => {
-            if (buttonsCreated) return; // Buttons bereits sichtbar, nichts tun
+        // Use the content container to handle hover for the entire area
+        const content = document.querySelector('.content');
+
+        content.addEventListener('mouseenter', () => {
+            if (buttonsCreated) return; // Buttons already visible
             clearTimeout(hideTimeout);
             greeting.classList.add('blurred');
             buttonCircle.classList.add('active');
             createCircularButtons();
         });
 
-        greeting.addEventListener('mouseleave', () => {
-            hideTimeout = setTimeout(() => {
-                greeting.classList.remove('blurred');
-                removeCircularButtons();
-            }, 300);
-        });
-
-        buttonCircle.addEventListener('mouseenter', () => {
-            clearTimeout(hideTimeout);
-        });
-
-        buttonCircle.addEventListener('mouseleave', () => {
+        content.addEventListener('mouseleave', () => {
             hideTimeout = setTimeout(() => {
                 greeting.classList.remove('blurred');
                 removeCircularButtons();
