@@ -776,21 +776,13 @@
                     span.textContent = link.label;
                     button.appendChild(span);
                     
-                    // Hover Events für Edit/Delete Buttons
+                    // Show edit/delete buttons on hover
                     button.addEventListener('mouseenter', (e) => {
                         currentHoveredLink = { element: button, index: index, link: link };
                         showActionButtons(button);
                     });
 
-                    button.addEventListener('mouseleave', (e) => {
-                        // Nur verstecken wenn Maus nicht zu Edit/Delete Buttons geht
-                        setTimeout(() => {
-                            if (!editButton.matches(':hover') && !deleteButton.matches(':hover')) {
-                                currentHoveredLink = null;
-                                hideActionButtons();
-                            }
-                        }, 200);
-                    });
+                    // Don't hide on mouseleave - let the buttonCircle handle all hiding logic
                 }
 
                 button.style.left = `calc(50% + ${x}px)`;
@@ -829,39 +821,8 @@
         editButton.addEventListener('click', editLink);
         deleteButton.addEventListener('click', deleteLink);
 
-        editButton.addEventListener('mouseenter', () => {
-            // Keep buttons visible when hovering over them
-            if (currentHoveredLink) {
-                editButton.classList.add('show');
-                deleteButton.classList.add('show');
-            }
-        });
-
-        deleteButton.addEventListener('mouseenter', () => {
-            // Keep buttons visible when hovering over them
-            if (currentHoveredLink) {
-                editButton.classList.add('show');
-                deleteButton.classList.add('show');
-            }
-        });
-
-        editButton.addEventListener('mouseleave', () => {
-            setTimeout(() => {
-                if (currentHoveredLink && !currentHoveredLink.element.matches(':hover') && !deleteButton.matches(':hover')) {
-                    hideActionButtons();
-                    currentHoveredLink = null;
-                }
-            }, 200);
-        });
-
-        deleteButton.addEventListener('mouseleave', () => {
-            setTimeout(() => {
-                if (currentHoveredLink && !currentHoveredLink.element.matches(':hover') && !editButton.matches(':hover')) {
-                    hideActionButtons();
-                    currentHoveredLink = null;
-                }
-            }, 200);
-        });
+        // Edit/delete buttons don't need hover management
+        // They appear when hovering link buttons and disappear with the circle
 
         // Hover on greeting shows buttons
         greeting.addEventListener('mouseenter', () => {
